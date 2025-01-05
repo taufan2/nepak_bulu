@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nepak_bulu_2/bloc/select_player_presence/select_player_presence_bloc.dart';
+import 'package:nepak_bulu_2/components/matchmaking/matchmaking_submit_button.dart';
 import 'package:nepak_bulu_2/components/matchmaking/select_member_list_builder.dart';
 import 'package:nepak_bulu_2/helpers/matchmakePlayers/create_matchmaking.dart';
 import 'package:nepak_bulu_2/helpers/matchmakePlayers/matchmaking_result.dart';
@@ -157,42 +158,11 @@ class _SelectPlayerState extends State<SelectPlayer> {
                       ),
                     ],
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: buttonDisabled ? 0 : 2,
-                    ),
-                    onPressed: buttonDisabled
-                        ? null
-                        : () => onSubmitMatchMake(checkedPlayers),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "MULAI",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        if (!buttonDisabled) ...[
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 20,
-                            color: Colors.white,
-                          ),
-                        ],
-                      ],
-                    ),
+                  MatchmakingSubmitButton(
+                    disabled: buttonDisabled,
+                    loading: false,
+                    onSubmit: onSubmitMatchMake,
+                    checkedPlayers: checkedPlayers,
                   ),
                 ],
               );
