@@ -1,58 +1,58 @@
 # Nepak Bulu 2
 
-Aplikasi Flutter untuk manajemen pertandingan bulutangkis dengan fitur matchmaking otomatis.
+Aplikasi Flutter untuk mengatur pertandingan bulutangkis dengan sistem pembagian tim otomatis.
 
 > **Catatan**: 
-> - Saat ini aplikasi hanya mendukung platform Android dan Web.
-> - Ini adalah proyek pribadi dan tidak menerima kolaborasi langsung, tapi Anda dapat mem-fork repository ini untuk pengembangan sendiri.
+> - Saat ini aplikasi hanya bisa dijalankan di Android dan Web
+> - Ini adalah proyek pribadi dan tidak menerima kontribusi langsung, tapi kamu bisa mem-fork repository ini untuk pengembangan sendiri
 
 ## Daftar Isi
-- [Deskripsi](#deskripsi)
-- [Alur Aplikasi](#alur-aplikasi)
-- [Detail Algoritma](#detail-algoritma)
-- [Fitur Utama](#fitur-utama)
-- [Snippet Kode](#snippet-kode-utama)
+- [Penjelasan](#deskripsi)
+- [Cara Kerja](#alur-aplikasi)
+- [Detail Sistem](#detail-algoritma)
+- [Fitur Unggulan](#fitur-utama)
+- [Contoh Kode](#snippet-kode-utama)
 - [Teknologi](#teknologi)
-- [Cara Memulai](#cara-memulai)
+- [Mulai Menggunakan](#cara-memulai)
 
-## Deskripsi
+## Penjelasan
 
-Nepak Bulu 2 adalah aplikasi Flutter yang dirancang untuk memudahkan pengelolaan pertandingan bulutangkis. Dengan fokus utama pada sistem matchmaking otomatis yang canggih, aplikasi ini memastikan setiap pemain mendapatkan pengalaman bermain yang adil dan bervariasi.
+Nepak Bulu 2 adalah aplikasi Flutter yang dibuat untuk memudahkan pengaturan pertandingan bulutangkis. Dengan fokus utama pada sistem pembagian tim otomatis yang canggih, aplikasi ini memastikan setiap pemain mendapat pengalaman bermain yang adil dan bervariasi.
 
-## Alur Aplikasi
+## Cara Kerja
 
-1. **[Pendaftaran Pemain](#detail-pendaftaran-pemain)**
+1. **[Daftar Pemain](#detail-pendaftaran-pemain)**
    - Admin mendaftarkan pemain baru
-   - Mengisi data pemain (nama, status aktif)
-   - Mengatur preferensi "Don't Match" jika ada
+   - Mengisi data pemain (nama dan status aktif)
+   - Mengatur siapa saja yang tidak boleh dipasangkan
 
-2. **[Persiapan Sesi](#detail-persiapan-sesi)**
-   - Admin memilih pemain yang akan bermain
-   - Sistem memvalidasi jumlah pemain (minimal 2)
-   - Pemain yang dipilih harus berstatus aktif
+2. **[Persiapan Main](#detail-persiapan-sesi)**
+   - Admin memilih siapa saja yang akan bermain
+   - Sistem mengecek jumlah pemain (minimal 2)
+   - Pemain yang dipilih harus yang aktif
 
-3. **[Proses Matchmaking](#detail-proses-matchmaking)**
-   - Sistem menjalankan algoritma matchmaking
-   - Melalui 3 tingkat prioritas jika diperlukan
-   - Menghasilkan pasangan yang optimal
+3. **[Pembagian Tim](#detail-proses-matchmaking)**
+   - Sistem menjalankan pembagian tim
+   - Melalui 3 tahap prioritas jika diperlukan
+   - Menghasilkan pasangan yang paling optimal
 
-4. **[Hasil Matchmaking](#detail-hasil-matchmaking)**
+4. **[Hasil Pembagian](#detail-hasil-matchmaking)**
    - Menampilkan pasangan yang terbentuk
-   - Menandai pemain tanpa tim (jika ada)
+   - Menandai pemain yang tidak dapat tim (jika ada)
    - Menyimpan hasil ke database
 
-5. **[Riwayat dan Statistik](#detail-riwayat-statistik)**
-   - Menyimpan setiap sesi pertandingan
+5. **[Riwayat dan Data](#detail-riwayat-statistik)**
+   - Menyimpan setiap sesi main
    - Mencatat semua pasangan yang terbentuk
-   - Menggunakan data untuk validasi sesi berikutnya
+   - Menggunakan data untuk pembagian tim berikutnya
 
-## Detail Algoritma
+## Detail Sistem
 
 ### Detail Pendaftaran Pemain
-1. **Validasi Data**
-   - Nama pemain harus unik
-   - Status aktif default adalah true
-   - Preferensi don't match awalnya kosong
+1. **Pengecekan Data**
+   - Nama pemain tidak boleh sama
+   - Status aktif otomatis diset aktif
+   - Daftar pemain yang tidak boleh dipasangkan awalnya kosong
 
 2. **Penyimpanan Data**
    ```dart
@@ -64,20 +64,20 @@ Nepak Bulu 2 adalah aplikasi Flutter yang dirancang untuk memudahkan pengelolaan
      createdAt: timestamp
    ```
 
-### Detail Persiapan Sesi
-1. **Validasi Pemilihan**
-   - Minimal 2 pemain harus dipilih
+### Detail Persiapan Main
+1. **Pengecekan Pemain**
+   - Minimal harus ada 2 pemain
    - Semua pemain harus aktif
-   - Sistem mengecek kompatibilitas don't match
+   - Sistem mengecek aturan "tidak boleh dipasangkan"
 
 2. **Optimasi Pemilihan**
    ```dart
-   // Algoritma validasi pemilihan
+   // Algoritma pengecekan pemilihan
    bool validateSelection(List<Player> players) {
      if (players.length < 2) return false;
      if (players.any((p) => !p.isActive)) return false;
      
-     // Cek apakah ada kemungkinan match
+     // Cek apakah masih bisa dipasangkan
      int totalPlayers = players.length;
      int totalDontMatch = players
          .fold(0, (sum, p) => sum + p.dontMatchWith.length);
@@ -86,23 +86,23 @@ Nepak Bulu 2 adalah aplikasi Flutter yang dirancang untuk memudahkan pengelolaan
    }
    ```
 
-### Detail Proses Matchmaking
+### Detail Pembagian Tim
 1. **Prioritas Pertama**
-   - Menggunakan algoritma [Hungarian Algorithm](https://en.wikipedia.org/wiki/Hungarian_algorithm) yang dimodifikasi
-   - Mempertimbangkan preferensi don't match
-   - Validasi unique pairs dari history
+   - Menggunakan algoritma [Hungarian](https://en.wikipedia.org/wiki/Hungarian_algorithm) yang dimodifikasi
+   - Mempertimbangkan aturan "tidak boleh dipasangkan"
+   - Mengecek riwayat pasangan sebelumnya
 
 2. **Prioritas Kedua**
-   - Mengabaikan preferensi don't match
-   - Tetap memvalidasi unique pairs
-   - Menggunakan pendekatan greedy algorithm
+   - Mengabaikan aturan "tidak boleh dipasangkan"
+   - Tetap mengecek riwayat pasangan
+   - Menggunakan algoritma greedy
 
 3. **Prioritas Ketiga**
-   - Random matching tanpa batasan
-   - Menggunakan Fisher-Yates shuffle
-   - Fallback terakhir untuk memastikan game berjalan
+   - Pembagian acak tanpa aturan
+   - Menggunakan pengacakan Fisher-Yates
+   - Jalan terakhir agar permainan tetap bisa berjalan
 
-### Detail Hasil Matchmaking
+### Detail Hasil Pembagian
 1. **Struktur Data Hasil**
    ```dart
    // Struktur data sesi di Firestore
@@ -120,15 +120,15 @@ Nepak Bulu 2 adalah aplikasi Flutter yang dirancang untuk memudahkan pengelolaan
    ```
 
 2. **Penanganan Kasus Khusus**
-   - Pemain Ganjil: Ditandai sebagai noTeam
-   - Tim Ganjil: Tim terakhir ditandai noMatch
-   - No More Unique Pairs: Flag untuk tracking
+   - Pemain Ganjil: Ditandai sebagai pemain cadangan
+   - Tim Ganjil: Tim terakhir ditandai menunggu
+   - No More Unique Pairs: Penanda sudah tidak ada pasangan unik
 
-### Detail Riwayat Statistik
-1. **Tracking Pasangan**
+### Detail Riwayat dan Data
+1. **Pencatatan Pasangan**
    - Menyimpan setiap pasangan yang terbentuk
-   - Menggunakan composite key untuk pencarian cepat
-   - Membersihkan history untuk pemain tidak aktif
+   - Menggunakan kunci gabungan untuk pencarian cepat
+   - Membersihkan riwayat untuk pemain tidak aktif
 
 2. **Analisis Data**
    ```dart
@@ -139,36 +139,36 @@ Nepak Bulu 2 adalah aplikasi Flutter yang dirancang untuk memudahkan pengelolaan
          .get();
      
      return {
-       'totalMatches': matches.length,
-       'uniquePartners': _countUniquePartners(matches),
-       'noTeamCount': _countNoTeam(matches),
+       'totalMain': matches.length,
+       'totalPasangan': _countUniquePartners(matches),
+       'totalJadiCadangan': _countNoTeam(matches),
      };
    }
    ```
 
-## Fitur Utama
+## Fitur Unggulan
 
 ### 1. Manajemen Pemain
 - Pendaftaran dan pengelolaan data pemain
 - Status keaktifan pemain
-- Pengaturan preferensi "Don't Match" antar pemain
+- Pengaturan siapa saja yang tidak boleh dipasangkan
 
-### 2. Sistem Matchmaking V2
+### 2. Sistem Pembagian Tim V2
 Menggunakan algoritma 3 tingkat prioritas:
 
 **Prioritas Pertama (1000 percobaan)**
-- Menghormati preferensi "Don't Match"
+- Menghormati aturan "tidak boleh dipasangkan"
 - Memastikan pasangan unik (belum pernah dipasangkan)
 - Pengacakan pemain untuk keadilan
 
 **Prioritas Kedua (1000 percobaan)**
-- Mengabaikan preferensi "Don't Match"
+- Mengabaikan aturan "tidak boleh dipasangkan"
 - Tetap mempertahankan pasangan unik
 - Digunakan jika Prioritas Pertama gagal
 
 **Prioritas Ketiga (Fallback)**
 - Pengacakan total tanpa batasan
-- Mengabaikan semua preferensi
+- Mengabaikan semua aturan
 - Solusi terakhir untuk memastikan permainan tetap berjalan
 
 ### 3. Penanganan Kasus Khusus
@@ -177,9 +177,9 @@ Menggunakan algoritma 3 tingkat prioritas:
 - Riwayat Pertandingan: Pencatatan lengkap setiap sesi
 - Status "noMoreUniquePairs" untuk tracking pasangan
 
-## Snippet Kode Utama
+## Contoh Kode Utama
 
-### 1. Algoritma Matchmaking
+### 1. Algoritma Pembagian Tim
 ```dart
 // Mencoba membuat pasangan dengan prioritas tertinggi
 Future<PairSession?> _tryCreateWithPriorityOne() async {
@@ -361,7 +361,7 @@ class PlayerCard extends StatelessWidget {
 - BLoC Pattern (State Management)
 - Cloud Firestore
 
-## Cara Memulai
+## Mulai Menggunakan
 
 1. **Clone Repository**
    ```bash
