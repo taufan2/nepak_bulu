@@ -1,0 +1,145 @@
+# Matchmaking Rules (create_matchmaking_v2.dart)
+
+## Konstanta Konfigurasi
+- MAX_VALIDATION_ATTEMPTS = 1000
+  Menentukan jumlah maksimal percobaan untuk setiap prioritas.
+  Semakin besar nilainya, semakin besar kemungkinan menemukan solusi optimal,
+  tapi juga semakin lama waktu prosesnya.
+
+## Alur Matchmaking
+1. Prioritas Pertama (1000 percobaan):
+   - Acak pemain
+   - Prioritaskan pemain agar tidak berpasangan dengan dontMatchWith
+   - Validasi tiap pasangan belum pernah dipasangkan sebelumnya
+   - Jika gagal setelah 1000 percobaan, lanjut ke Prioritas Kedua
+   - Jika gagal setelah 1000 percobaan, lanjut ke Prioritas Ketiga
+
+2. Prioritas Kedua (1000 percobaan):
+   - Acak pemain
+   - Abaikan dontMatchWith
+   - Validasi tiap pasangan belum pernah dipasangkan sebelumnya
+   - Jika gagal setelah 1000 percobaan, lanjut ke Prioritas Ketiga
+
+3. Prioritas Ketiga (Fallback):
+   - Acak pemain
+   - Pasangkan tanpa validasi apapun
+   - Digunakan ketika semua pemain sudah pernah dipasangkan satu sama lain
+
+## Detail Implementasi Prioritas
+### Prioritas Pertama (_tryCreateWithPriorityOne)
+1. Reset state:
+   - Kosongkan teams
+   - Reset noTeam ke null
+   - Set noMoreUniquePairs ke false
+   - Acak ulang availablePlayers
+   - Buat copy ke remainingPlayers
+
+2. Proses Matching:
+   - Ambil player1 dari index pertama
+   - Cari player2 yang tidak di dontMatch
+   - Validasi belum pernah dipasangkan
+   - Jika valid: buat tim dan hapus dari remainingPlayers
+   - Jika tidak valid: coba kombinasi lain
+
+3. Kondisi Sukses:
+   - Semua pemain terpasangkan (remainingPlayers kosong)
+   - Atau tersisa 1 pemain (jadi noTeam)
+   - Tidak ada pelanggaran dontMatch
+   - Semua pasangan adalah unik
+
+### Prioritas Kedua (_tryCreateWithPriorityTwo)
+1. Reset state (sama seperti Prioritas Pertama)
+
+2. Proses Matching:
+   - Iterasi semua kombinasi pemain yang mungkin
+   - Abaikan aturan dontMatch
+   - Validasi hanya untuk unique pairs
+   - Gunakan flag madeProgress untuk deteksi stuck
+
+3. Kondisi Sukses:
+   - Semua pemain terpasangkan
+   - Atau tersisa 1 pemain (jadi noTeam)
+   - Semua pasangan adalah unik
+
+### Prioritas Ketiga (_createRandomPairs)
+1. Reset state:
+   - Kosongkan teams
+   - Reset noTeam ke null
+   - Set noMoreUniquePairs ke true
+   - Acak ulang availablePlayers
+   - Buat copy ke remainingPlayers
+
+2. Proses Matching:
+   - Pasangkan pemain secara berurutan
+   - Tidak ada validasi dontMatch
+   - Tidak ada validasi unique pairs
+   - Selalu berhasil sebagai fallback terakhir
+
+## Aturan Pembuatan Tim
+1. Pemain Ganjil:
+   - Satu pemain terakhir ditandai sebagai noTeam
+   - noTeam akan menunggu giliran berikutnya
+   - Pemain noTeam dipilih secara acak (hasil shuffle)
+
+2. Tim Ganjil:
+   - Tim terakhir ditandai sebagai noMatch
+   - noMatch akan menunggu lawan di giliran berikutnya
+   - Tim noMatch dipilih dari urutan terakhir
+
+## Aturan Don't Match
+1. Pemain bisa menandai pemain lain sebagai don't match
+2. Don't match berlaku dua arah (mutual)
+3. Don't match hanya berlaku di Prioritas Pertama
+4. Don't match diabaikan di Prioritas Kedua dan Ketiga
+5. Validasi menggunakan docRef.id untuk identifikasi pemain
+
+## Aturan History Pairs
+1. Hanya menyimpan history pemain yang masih aktif
+2. History dibersihkan saat load dari database
+3. History digunakan untuk validasi unique pairs di Prioritas 1 & 2
+4. History diabaikan di Prioritas Ketiga
+5. Validasi menggunakan docRef.id untuk identifikasi pemain
+
+## Aturan Penyimpanan
+1. Setiap sesi matchmaking disimpan sebagai PairSession
+2. PairSession menyimpan:
+   - Daftar tim yang terbentuk
+   - Status noMoreUniquePairs (true jika masuk Prioritas Ketiga)
+   - Pemain tanpa tim (noTeam)
+   - Waktu pembuatan
+3. Pairs disimpan sebagai subcollection dengan:
+   - Referensi ke pemain (docRef)
+   - Nama pemain
+   - Status noMoreUniquePairs
+   - Timestamp
+
+## Aturan Validasi
+1. Maksimal 500 percobaan untuk setiap prioritas
+2. Validasi berhenti jika menemukan solusi valid
+3. Solusi valid di Prioritas Pertama:
+   - Tidak ada pelanggaran dontMatch
+   - Semua pasangan belum pernah dipasangkan
+   
+4. Solusi valid di Prioritas Kedua:
+   - Semua pasangan belum pernah dipasangkan
+   - Mengabaikan dontMatch
+
+5. Prioritas Ketiga tidak memerlukan validasi
+
+## Aturan Umum
+1. Daftar pemain diacak di setiap percobaan untuk fairness
+2. Sistem mencoba maksimal di Prioritas Pertama dan Kedua
+3. Prioritas Ketiga sebagai jalan terakhir yang pasti berhasil
+4. Hasil disimpan ke database setelah menemukan solusi valid
+5. Menggunakan copy dari list untuk menghindari side effects
+6. Selalu membersihkan state sebelum percobaan baru
+
+## Penanganan Error
+1. Prioritas 1 & 2 mengembalikan null jika gagal setelah MAX_VALIDATION_ATTEMPTS percobaan
+2. Prioritas 3 selalu berhasil sebagai fallback
+3. State direset di setiap percobaan baru
+4. Menggunakan flag untuk deteksi progress
+5. Tidak ada infinite loop karena:
+   - Maksimal percobaan dibatasi oleh MAX_VALIDATION_ATTEMPTS (1000 kali)
+   - Flag madeProgress di Prioritas 2
+   - Prioritas 3 pasti berhasil
