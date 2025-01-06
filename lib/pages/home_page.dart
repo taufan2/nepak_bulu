@@ -91,11 +91,24 @@ class _HomePageState extends State<HomePage> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20),
                   child: Center(
-                    child: Text(
-                      "Made with ️💖 for Discord Community",
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[500],
-                          ),
+                    child: Column(
+                      children: [
+                        Text(
+                          "Made with ️💖 for Discord Community",
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.grey[500],
+                                  ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "v$appVersion",
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey[400],
+                                  ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
