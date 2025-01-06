@@ -98,8 +98,10 @@ class _SelectSessionState extends State<SelectSession> {
                                     .read<SelectSessionBloc>()
                                     .add(const SelectSessionBlocFetch());
                               },
-                              icon: const Icon(Icons.refresh_rounded),
-                              label: const Text('Coba Lagi'),
+                              icon: const Icon(Icons.refresh_rounded,
+                                  color: Colors.white),
+                              label: const Text('Coba Lagi',
+                                  style: TextStyle(color: Colors.white)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryColor,
                                 foregroundColor: Colors.white,

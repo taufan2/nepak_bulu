@@ -104,6 +104,40 @@ cd nepak_bulu
    firebase deploy
    ```
 
+#### D. Setup Firestore Rules
+> **Catatan**: Aplikasi ini tidak menggunakan autentikasi, jadi kita perlu mengatur rules yang sesuai
+
+1. Buat file `firestore.rules` di root project
+2. Isi dengan rules berikut:
+   ```javascript
+   rules_version = '2';
+
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       
+       // Rules untuk koleksi badminton_players
+       match /badminton_players/{docId} {
+         allow create, read, update, delete: if true;
+       }
+
+       // Rules untuk koleksi pair_sessions
+       match /pair_sessions/{docId} {
+         allow create, read, update, delete: if true;
+
+         // Rules untuk subkoleksi pairs di dalam pair_sessions
+         match /pairs/{pairId} {
+           allow create, read, update, delete: if true;
+         }
+       }
+     }
+   }
+   ```
+
+3. Deploy rules ke Firebase
+   ```bash
+   firebase deploy --only firestore:rules
+   ```
+
 ### 3. Instalasi Dependensi
 ```bash
 flutter pub get
