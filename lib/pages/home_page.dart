@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../components/home/home_button.dart';
+import '../components/home/download_section.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -82,6 +85,11 @@ class _HomePageState extends State<HomePage> {
                   label: 'Unique Matchmaking',
                 ),
                 const Spacer(),
+                // Download section
+                if (kIsWeb) ...[
+                  const DownloadSection(),
+                  const SizedBox(height: 20),
+                ],
                 // Footer
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20),

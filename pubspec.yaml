@@ -45,6 +45,7 @@ dependencies:
   shimmer: ^3.0.0
   flutter_launcher_icons: ^0.14.2
   rename_app: ^1.6.1
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:
