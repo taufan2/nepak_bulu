@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DownloadSection extends StatelessWidget {
@@ -12,8 +13,17 @@ class DownloadSection extends StatelessWidget {
     );
   }
 
+  void _launchWebUrl() {
+    launchUrl(
+      Uri.parse('https://badminton-wd.web.app/'),
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isAndroid = !kIsWeb;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       decoration: BoxDecoration(
@@ -32,7 +42,7 @@ class DownloadSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              Icons.android_rounded,
+              isAndroid ? Icons.web : Icons.android_rounded,
               color: Theme.of(context).colorScheme.secondary,
             ),
           ),
@@ -42,7 +52,7 @@ class DownloadSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Aplikasi Android",
+                  isAndroid ? "Versi Web" : "Aplikasi Android",
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontSize: 16,
                         color: Theme.of(context).colorScheme.secondary,
@@ -50,7 +60,9 @@ class DownloadSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Unduh APK langsung dari Google Drive",
+                  isAndroid
+                      ? "Buka aplikasi di browser"
+                      : "Unduh APK langsung dari Google Drive",
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.grey[600],
                       ),
@@ -59,9 +71,9 @@ class DownloadSection extends StatelessWidget {
             ),
           ),
           TextButton.icon(
-            onPressed: _launchDownloadUrl,
-            icon: const Icon(Icons.download),
-            label: const Text("APK"),
+            onPressed: isAndroid ? _launchWebUrl : _launchDownloadUrl,
+            icon: Icon(isAndroid ? Icons.open_in_new : Icons.download),
+            label: Text(isAndroid ? "Buka" : "APK"),
           ),
         ],
       ),

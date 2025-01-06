@@ -189,20 +189,35 @@ flutter run
    ```
 
 ### Detail Pembagian Tim
-1. **Prioritas Pertama**
-   - Menggunakan algoritma [Hungarian](https://en.wikipedia.org/wiki/Hungarian_algorithm) yang dimodifikasi
-   - Mempertimbangkan aturan "tidak boleh dipasangkan"
-   - Mengecek riwayat pasangan sebelumnya
+1. **Prioritas Pertama (1000 percobaan)**
+   - Mengacak pemain untuk keadilan
+   - Menghormati aturan "tidak boleh dipasangkan"
+   - Memastikan pasangan unik (belum pernah dipasangkan)
+   - Jika gagal setelah 1000 percobaan, lanjut ke Prioritas Kedua
 
-2. **Prioritas Kedua**
+2. **Prioritas Kedua (1000 percobaan)**
+   - Mengacak pemain untuk keadilan
    - Mengabaikan aturan "tidak boleh dipasangkan"
-   - Tetap mengecek riwayat pasangan
-   - Menggunakan algoritma greedy
+   - Tetap memastikan pasangan unik
+   - Jika gagal setelah 1000 percobaan, lanjut ke Prioritas Ketiga
 
-3. **Prioritas Ketiga**
-   - Pembagian acak tanpa aturan
-   - Menggunakan pengacakan Fisher-Yates
-   - Jalan terakhir agar permainan tetap bisa berjalan
+3. **Prioritas Ketiga (Fallback)**
+   - Mengacak pemain untuk keadilan
+   - Mengabaikan semua aturan (termasuk unique pairs)
+   - Solusi terakhir yang pasti berhasil
+   - Ditandai dengan flag noMoreUniquePairs = true
+
+4. **Penanganan Kasus Khusus**
+   - Pemain Ganjil: Satu pemain terakhir ditandai sebagai noTeam
+   - Tim Ganjil: Tim terakhir ditandai sebagai noMatch
+   - Pemain noTeam dipilih secara acak (hasil shuffle)
+   - Tim noMatch dipilih dari urutan terakhir
+
+5. **Validasi dan Batasan**
+   - Maksimal 1000 percobaan untuk setiap prioritas
+   - Validasi menggunakan docRef.id untuk identifikasi pemain
+   - History pairs dibersihkan saat load dari database
+   - History hanya menyimpan pemain yang masih aktif
 
 ### Detail Hasil Pembagian
 1. **Struktur Data Hasil**
@@ -256,22 +271,22 @@ flutter run
 - Pengaturan siapa saja yang tidak boleh dipasangkan
 
 ### 2. Sistem Pembagian Tim V2
-Menggunakan algoritma 3 tingkat prioritas:
+- **Algoritma Multi-Prioritas**
+  - Tiga tingkat prioritas dengan maksimal 1000 percobaan per tingkat
+  - Pengacakan pemain di setiap percobaan untuk keadilan
+  - Fallback otomatis ke prioritas berikutnya jika gagal
 
-**Prioritas Pertama (1000 percobaan)**
-- Menghormati aturan "tidak boleh dipasangkan"
-- Memastikan pasangan unik (belum pernah dipasangkan)
-- Pengacakan pemain untuk keadilan
+- **Validasi Canggih**
+  - Pengecekan dontMatchWith di Prioritas Pertama
+  - Pengecekan unique pairs di Prioritas Pertama & Kedua
+  - Pembersihan history pairs untuk pemain tidak aktif
+  - Penggunaan docRef.id untuk identifikasi akurat
 
-**Prioritas Kedua (1000 percobaan)**
-- Mengabaikan aturan "tidak boleh dipasangkan"
-- Tetap mempertahankan pasangan unik
-- Digunakan jika Prioritas Pertama gagal
-
-**Prioritas Ketiga (Fallback)**
-- Pengacakan total tanpa batasan
-- Mengabaikan semua aturan
-- Solusi terakhir untuk memastikan permainan tetap berjalan
+- **Penanganan Kasus Khusus**
+  - Pemain ganjil → noTeam (dipilih acak)
+  - Tim ganjil → noMatch (tim terakhir)
+  - Flag noMoreUniquePairs untuk tracking solusi
+  - Penyimpanan lengkap ke Firestore
 
 ### 3. Pengelolaan Sesi
 ```dart

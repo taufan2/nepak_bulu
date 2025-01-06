@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:url_launcher/url_launcher.dart';
 
 import '../components/home/home_button.dart';
 import '../components/home/download_section.dart';
@@ -86,16 +85,14 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const Spacer(),
                 // Download section
-                if (kIsWeb) ...[
-                  const DownloadSection(),
-                  const SizedBox(height: 20),
-                ],
+                const DownloadSection(),
+                const SizedBox(height: 20),
                 // Footer
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20),
                   child: Center(
                     child: Text(
-                      "Made with ❤️ for Discord Community",
+                      "Made with ️💖 for Discord Community",
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.grey[500],
                           ),
