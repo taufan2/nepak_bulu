@@ -7,44 +7,112 @@ Aplikasi Flutter untuk mengatur pertandingan bulutangkis dengan sistem pembagian
 > - Ini adalah proyek pribadi dan tidak menerima kontribusi langsung, tapi kamu bisa mem-fork repository ini untuk pengembangan sendiri
 
 ## Daftar Isi
-- [Penjelasan](#deskripsi)
-- [Cara Kerja](#alur-aplikasi)
-- [Detail Sistem](#detail-algoritma)
-- [Fitur Unggulan](#fitur-utama)
-- [Contoh Kode](#snippet-kode-utama)
+- [Penjelasan](#penjelasan)
+- [Cara Kerja](#cara-kerja)
+- [Setup & Konfigurasi](#setup--konfigurasi)
+- [Detail Sistem](#detail-sistem)
+- [Fitur Unggulan](#fitur-unggulan)
 - [Teknologi](#teknologi)
-- [Mulai Menggunakan](#cara-memulai)
+- [Struktur Proyek](#struktur-proyek)
+- [Pengembangan](#pengembangan)
+- [Kolaborasi](#kolaborasi)
 
 ## Penjelasan
-
 Nepak Bulu 2 adalah aplikasi Flutter yang dibuat untuk memudahkan pengaturan pertandingan bulutangkis. Dengan fokus utama pada sistem pembagian tim otomatis yang canggih, aplikasi ini memastikan setiap pemain mendapat pengalaman bermain yang adil dan bervariasi.
 
 ## Cara Kerja
-
-1. **[Daftar Pemain](#detail-pendaftaran-pemain)**
+1. **Daftar Pemain**
    - Admin mendaftarkan pemain baru
    - Mengisi data pemain (nama dan status aktif)
    - Mengatur siapa saja yang tidak boleh dipasangkan
 
-2. **[Persiapan Main](#detail-persiapan-sesi)**
+2. **Persiapan Main**
    - Admin memilih siapa saja yang akan bermain
    - Sistem mengecek jumlah pemain (minimal 2)
    - Pemain yang dipilih harus yang aktif
 
-3. **[Pembagian Tim](#detail-proses-matchmaking)**
+3. **Pembagian Tim**
    - Sistem menjalankan pembagian tim
    - Melalui 3 tahap prioritas jika diperlukan
    - Menghasilkan pasangan yang paling optimal
 
-4. **[Hasil Pembagian](#detail-hasil-matchmaking)**
+4. **Hasil Pembagian**
    - Menampilkan pasangan yang terbentuk
    - Menandai pemain yang tidak dapat tim (jika ada)
    - Menyimpan hasil ke database
 
-5. **[Riwayat dan Data](#detail-riwayat-statistik)**
+5. **Riwayat dan Data**
    - Menyimpan setiap sesi main
    - Mencatat semua pasangan yang terbentuk
    - Menggunakan data untuk pembagian tim berikutnya
+
+## Setup & Konfigurasi
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/taufan2/nepak_bulu.git
+cd nepak_bulu
+```
+
+### 2. Setup Firebase
+
+#### A. Persiapan
+1. Buat project di [Firebase Console](https://console.firebase.google.com)
+2. Install tools yang diperlukan:
+   ```bash
+   # Install Firebase CLI
+   npm install -g firebase-tools
+   
+   # Install FlutterFire CLI
+   dart pub global activate flutterfire_cli
+   ```
+
+#### B. Konfigurasi Firebase
+1. Login ke Firebase
+   ```bash
+   firebase login
+   ```
+
+2. Setup FlutterFire
+   ```bash
+   flutterfire configure
+   ```
+   > Ini akan:
+   > - Menghubungkan project Flutter dengan Firebase
+   > - Menghasilkan file `lib/firebase_options.dart`
+   > - Mengkonfigurasi Firebase services (Firestore, Auth, dll)
+
+#### C. Setup Firebase Hosting
+1. Inisialisasi Firebase di project
+   ```bash
+   firebase init
+   ```
+   > Pilih opsi berikut:
+   > - ✓ Hosting
+   > - ✓ Use existing project
+   > - ✓ Pilih project yang sudah dibuat
+   > - ✓ build/web sebagai public directory
+   > - ✓ Configure as single-page app: Yes
+   > - ✓ Setup automatic builds: No
+
+2. Build & Deploy
+   ```bash
+   # Build web app
+   flutter build web
+   
+   # Deploy ke Firebase Hosting
+   firebase deploy
+   ```
+
+### 3. Instalasi Dependensi
+```bash
+flutter pub get
+```
+
+### 4. Jalankan Aplikasi
+```bash
+flutter run
+```
 
 ## Detail Sistem
 
@@ -360,29 +428,6 @@ class PlayerCard extends StatelessWidget {
 - Firebase (Backend & Database)
 - BLoC Pattern (State Management)
 - Cloud Firestore
-
-## Mulai Menggunakan
-
-1. **Clone Repository**
-   ```bash
-   git clone https://github.com/taufan2/nepak_bulu.git
-   cd nepak_bulu
-   ```
-
-2. **Setup Firebase**
-   - Buat project di Firebase Console
-   - Salin `lib/firebase_options.template.dart` ke `lib/firebase_options.dart`
-   - Update kredensial Firebase di `firebase_options.dart`
-
-3. **Instalasi Dependensi**
-   ```bash
-   flutter pub get
-   ```
-
-4. **Jalankan Aplikasi**
-   ```bash
-   flutter run
-   ```
 
 ## Struktur Proyek
 

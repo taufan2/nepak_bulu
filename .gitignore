@@ -99,11 +99,19 @@ coverage/
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 
-# Firebase related
+# Firebase & FlutterFire related
 .firebase/
+.firebaserc
+firebase.json
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
-
-# Firebase config
+*firebase-export*
+.firebase-emulator/
+*.cache
+google-services.json
+GoogleService-Info.plist
+.env.firebase
 lib/firebase_options.dart
+lib/generated/
+lib/generated_plugin_registrant.dart
