@@ -114,4 +114,3 @@ GoogleService-Info.plist
 .env.firebase
 lib/firebase_options.dart
 lib/generated/
-lib/generated_plugin_registrant.dart
