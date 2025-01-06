@@ -239,67 +239,6 @@ Menggunakan algoritma 3 tingkat prioritas:
 - Mengabaikan semua aturan
 - Solusi terakhir untuk memastikan permainan tetap berjalan
 
-### 3. Penanganan Kasus Khusus
-- Pemain Ganjil: Satu pemain ditandai sebagai "noTeam"
-- Tim Ganjil: Tim terakhir ditandai sebagai "noMatch"
-- Riwayat Pertandingan: Pencatatan lengkap setiap sesi
-- Status "noMoreUniquePairs" untuk tracking pasangan
-
-## Contoh Kode Utama
-
-### 1. Algoritma Pembagian Tim
-```dart
-// Mencoba membuat pasangan dengan prioritas tertinggi
-Future<PairSession?> _tryCreateWithPriorityOne() async {
-  for (int attempt = 0; attempt < MAX_VALIDATION_ATTEMPTS; attempt++) {
-    // Reset state untuk percobaan baru
-    teams.clear();
-    noTeam = null;
-    noMoreUniquePairs = false;
-    
-    // Acak pemain yang tersedia
-    availablePlayers.shuffle();
-    List<Player> remainingPlayers = List.from(availablePlayers);
-
-    while (remainingPlayers.length >= 2) {
-      Player player1 = remainingPlayers[0];
-      
-      // Cari pasangan yang valid (tidak di dontMatch & belum pernah dipasangkan)
-      Player? player2 = _findValidPartner(player1, remainingPlayers);
-      
-      if (player2 != null) {
-        teams.add(Team(player1, player2));
-        remainingPlayers.remove(player1);
-        remainingPlayers.remove(player2);
-      } else {
-        break; // Tidak ada pasangan valid
-      }
-    }
-
-    // Berhasil jika semua pemain terpasangkan atau tersisa 1
-    if (remainingPlayers.isEmpty || remainingPlayers.length == 1) {
-      if (remainingPlayers.length == 1) {
-        noTeam = remainingPlayers[0];
-      }
-      return _createPairSession();
-    }
-  }
-  return null; // Gagal setelah MAX_VALIDATION_ATTEMPTS
-}
-```
-
-### 2. Validasi Pasangan Unik
-```dart
-bool _isUniquePair(Player player1, Player player2) {
-  // Cek di history pairs
-  String pair1 = '${player1.docRef.id}-${player2.docRef.id}';
-  String pair2 = '${player2.docRef.id}-${player1.docRef.id}';
-  
-  return !historyPairs.contains(pair1) && 
-         !historyPairs.contains(pair2);
-}
-```
-
 ### 3. Pengelolaan Sesi
 ```dart
 class PairSession {
@@ -308,7 +247,6 @@ class PairSession {
   final bool noMoreUniquePairs;
   final DateTime createdAt;
   
-  // Simpan sesi ke Firestore
   Future<void> save() async {
     final doc = await sessionsRef.add({
       'createdAt': createdAt,
@@ -316,7 +254,6 @@ class PairSession {
       'noTeam': noTeam?.toJson(),
     });
     
-    // Simpan tim sebagai sub-collection
     for (var team in teams) {
       await doc.collection('pairs').add({
         'player1': team.player1.toJson(),
@@ -421,6 +358,7 @@ class PlayerCard extends StatelessWidget {
     );
   }
 }
+```
 
 ## Teknologi
 
@@ -431,19 +369,21 @@ class PlayerCard extends StatelessWidget {
 
 ## Struktur Proyek
 
-```
+Berikut adalah struktur folder utama dari proyek:
+
+```text
 lib/
-├── bloc/                 # State management
+├── bloc/                  # State management
 ├── components/           # Widget reusable
 │   ├── matchmaking/     # Komponen matchmaking
 │   └── memberList/      # Komponen daftar pemain
 ├── helpers/             # Fungsi utilitas
 │   └── matchmakePlayers/# Algoritma matchmaking
 ├── models/              # Model data
-├── pages/              # Halaman UI
-│   ├── matchmaking_v2/ # Fitur matchmaking
-│   └── members/        # Manajemen pemain
-└── main.dart           # Entry point
+├── pages/               # Halaman UI
+│   ├── matchmaking_v2/  # Fitur matchmaking
+│   └── members/         # Manajemen pemain
+└── main.dart            # Entry point
 ```
 
 ## Dependensi Utama
