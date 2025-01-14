@@ -7,146 +7,44 @@ Aplikasi Flutter untuk mengatur pertandingan bulutangkis dengan sistem pembagian
 > - Ini adalah proyek pribadi dan tidak menerima kontribusi langsung, tapi kamu bisa mem-fork repository ini untuk pengembangan sendiri
 
 ## Daftar Isi
-- [Penjelasan](#penjelasan)
-- [Cara Kerja](#cara-kerja)
-- [Setup & Konfigurasi](#setup--konfigurasi)
-- [Detail Sistem](#detail-sistem)
-- [Fitur Unggulan](#fitur-unggulan)
+- [Penjelasan](#deskripsi)
+- [Cara Kerja](#alur-aplikasi)
+- [Detail Sistem](#detail-algoritma)
+- [Fitur Unggulan](#fitur-utama)
+- [Contoh Kode](#snippet-kode-utama)
 - [Teknologi](#teknologi)
-- [Struktur Proyek](#struktur-proyek)
-- [Pengembangan](#pengembangan)
-- [Kolaborasi](#kolaborasi)
+- [Mulai Menggunakan](#cara-memulai)
 
 ## Penjelasan
+
 Nepak Bulu 2 adalah aplikasi Flutter yang dibuat untuk memudahkan pengaturan pertandingan bulutangkis. Dengan fokus utama pada sistem pembagian tim otomatis yang canggih, aplikasi ini memastikan setiap pemain mendapat pengalaman bermain yang adil dan bervariasi.
 
 ## Cara Kerja
-1. **Daftar Pemain**
+
+1. **[Daftar Pemain](#detail-pendaftaran-pemain)**
    - Admin mendaftarkan pemain baru
    - Mengisi data pemain (nama dan status aktif)
    - Mengatur siapa saja yang tidak boleh dipasangkan
 
-2. **Persiapan Main**
+2. **[Persiapan Main](#detail-persiapan-sesi)**
    - Admin memilih siapa saja yang akan bermain
    - Sistem mengecek jumlah pemain (minimal 2)
    - Pemain yang dipilih harus yang aktif
 
-3. **Pembagian Tim**
+3. **[Pembagian Tim](#detail-proses-matchmaking)**
    - Sistem menjalankan pembagian tim
    - Melalui 3 tahap prioritas jika diperlukan
    - Menghasilkan pasangan yang paling optimal
 
-4. **Hasil Pembagian**
+4. **[Hasil Pembagian](#detail-hasil-matchmaking)**
    - Menampilkan pasangan yang terbentuk
    - Menandai pemain yang tidak dapat tim (jika ada)
    - Menyimpan hasil ke database
 
-5. **Riwayat dan Data**
+5. **[Riwayat dan Data](#detail-riwayat-statistik)**
    - Menyimpan setiap sesi main
    - Mencatat semua pasangan yang terbentuk
    - Menggunakan data untuk pembagian tim berikutnya
-
-## Setup & Konfigurasi
-
-### 1. Clone Repository
-```bash
-git clone https://github.com/taufan2/nepak_bulu.git
-cd nepak_bulu
-```
-
-### 2. Setup Firebase
-
-#### A. Persiapan
-1. Buat project di [Firebase Console](https://console.firebase.google.com)
-2. Install tools yang diperlukan:
-   ```bash
-   # Install Firebase CLI
-   npm install -g firebase-tools
-   
-   # Install FlutterFire CLI
-   dart pub global activate flutterfire_cli
-   ```
-
-#### B. Konfigurasi Firebase
-1. Login ke Firebase
-   ```bash
-   firebase login
-   ```
-
-2. Setup FlutterFire
-   ```bash
-   flutterfire configure
-   ```
-   > Ini akan:
-   > - Menghubungkan project Flutter dengan Firebase
-   > - Menghasilkan file `lib/firebase_options.dart`
-   > - Mengkonfigurasi Firebase services (Firestore, Auth, dll)
-
-#### C. Setup Firebase Hosting
-1. Inisialisasi Firebase di project
-   ```bash
-   firebase init
-   ```
-   > Pilih opsi berikut:
-   > - ✓ Hosting
-   > - ✓ Use existing project
-   > - ✓ Pilih project yang sudah dibuat
-   > - ✓ build/web sebagai public directory
-   > - ✓ Configure as single-page app: Yes
-   > - ✓ Setup automatic builds: No
-
-2. Build & Deploy
-   ```bash
-   # Build web app
-   flutter build web
-   
-   # Deploy ke Firebase Hosting
-   firebase deploy
-   ```
-
-#### D. Setup Firestore Rules
-> **Catatan**: Aplikasi ini tidak menggunakan autentikasi, jadi kita perlu mengatur rules yang sesuai
-
-1. Buat file `firestore.rules` di root project
-2. Isi dengan rules berikut:
-   ```javascript
-   rules_version = '2';
-
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       
-       // Rules untuk koleksi badminton_players
-       match /badminton_players/{docId} {
-         allow create, read, update, delete: if true;
-       }
-
-       // Rules untuk koleksi pair_sessions
-       match /pair_sessions/{docId} {
-         allow create, read, update, delete: if true;
-
-         // Rules untuk subkoleksi pairs di dalam pair_sessions
-         match /pairs/{pairId} {
-           allow create, read, update, delete: if true;
-         }
-       }
-     }
-   }
-   ```
-
-3. Deploy rules ke Firebase
-   ```bash
-   firebase deploy --only firestore:rules
-   ```
-
-### 3. Instalasi Dependensi
-```bash
-flutter pub get
-```
-
-### 4. Jalankan Aplikasi
-```bash
-flutter run
-```
 
 ## Detail Sistem
 
@@ -189,35 +87,20 @@ flutter run
    ```
 
 ### Detail Pembagian Tim
-1. **Prioritas Pertama (1000 percobaan)**
-   - Pemain diacak supaya semua dapat kesempatan yang sama
-   - Memperhatikan pemain yang tidak bisa dipasangkan
-   - Memastikan belum pernah bermain bersama sebelumnya
-   - Jika setelah 1000 kali percobaan masih gagal, lanjut ke Prioritas Kedua
+1. **Prioritas Pertama**
+   - Menggunakan algoritma [Hungarian](https://en.wikipedia.org/wiki/Hungarian_algorithm) yang dimodifikasi
+   - Mempertimbangkan aturan "tidak boleh dipasangkan"
+   - Mengecek riwayat pasangan sebelumnya
 
-2. **Prioritas Kedua (1000 percobaan)**
-   - Pemain masih tetap diacak seperti sebelumnya
-   - Mengabaikan aturan pemain yang tidak bisa dipasangkan
-   - Tetap mencari pasangan yang belum pernah bermain bersama
-   - Jika setelah 1000 kali percobaan masih gagal, lanjut ke Prioritas Ketiga
+2. **Prioritas Kedua**
+   - Mengabaikan aturan "tidak boleh dipasangkan"
+   - Tetap mengecek riwayat pasangan
+   - Menggunakan algoritma greedy
 
-3. **Prioritas Ketiga (Solusi Terakhir)**
-   - Pemain diacak untuk yang terakhir kalinya
-   - Semua aturan diabaikan (termasuk riwayat bermain bersama)
-   - Ini adalah solusi terakhir yang pasti berhasil
-   - Ditandai dengan flag noMoreUniquePairs = true
-
-4. **Penanganan Kasus Istimewa**
-   - Jika jumlah pemain ganjil: Satu pemain menjadi cadangan
-   - Jika jumlah tim ganjil: Satu tim menunggu giliran berikutnya
-   - Pemain cadangan dipilih secara acak
-   - Tim yang menunggu diambil dari urutan terakhir
-
-5. **Aturan dan Batasan**
-   - Setiap prioritas diberi kesempatan 1000 kali percobaan
-   - Menggunakan docRef.id sebagai pengenal unik pemain
-   - Riwayat bermain bersama dibersihkan saat memuat data
-   - Hanya menyimpan riwayat pemain yang masih aktif
+3. **Prioritas Ketiga**
+   - Pembagian acak tanpa aturan
+   - Menggunakan pengacakan Fisher-Yates
+   - Jalan terakhir agar permainan tetap bisa berjalan
 
 ### Detail Hasil Pembagian
 1. **Struktur Data Hasil**
@@ -271,22 +154,83 @@ flutter run
 - Pengaturan siapa saja yang tidak boleh dipasangkan
 
 ### 2. Sistem Pembagian Tim V2
-- **Mekanisme Pembagian**
-  - Menggunakan 3 tingkat prioritas, masing-masing 1000 kali percobaan
-  - Setiap percobaan mengacak pemain untuk memberi kesempatan yang sama
-  - Jika gagal, sistem otomatis mencoba cara berikutnya
+Menggunakan algoritma 3 tingkat prioritas:
 
-- **Sistem Pengawasan**
-  - Prioritas Pertama memperhatikan pemain yang tidak bisa dipasangkan
-  - Prioritas 1 & 2 memastikan belum pernah bermain bersama
-  - Riwayat bermain dibersihkan untuk pemain yang sudah tidak aktif
-  - Menggunakan docRef.id untuk memastikan data akurat
+**Prioritas Pertama (1000 percobaan)**
+- Menghormati aturan "tidak boleh dipasangkan"
+- Memastikan pasangan unik (belum pernah dipasangkan)
+- Pengacakan pemain untuk keadilan
 
-- **Penanganan Kasus Istimewa**
-  - Jumlah pemain ganjil? Satu orang menjadi cadangan
-  - Jumlah tim ganjil? Satu tim menunggu giliran berikutnya
-  - Menggunakan flag noMoreUniquePairs saat terpaksa mengulang pasangan
-  - Semua data tersimpan lengkap di Firestore
+**Prioritas Kedua (1000 percobaan)**
+- Mengabaikan aturan "tidak boleh dipasangkan"
+- Tetap mempertahankan pasangan unik
+- Digunakan jika Prioritas Pertama gagal
+
+**Prioritas Ketiga (Fallback)**
+- Pengacakan total tanpa batasan
+- Mengabaikan semua aturan
+- Solusi terakhir untuk memastikan permainan tetap berjalan
+
+### 3. Penanganan Kasus Khusus
+- Pemain Ganjil: Satu pemain ditandai sebagai "noTeam"
+- Tim Ganjil: Tim terakhir ditandai sebagai "noMatch"
+- Riwayat Pertandingan: Pencatatan lengkap setiap sesi
+- Status "noMoreUniquePairs" untuk tracking pasangan
+
+## Contoh Kode Utama
+
+### 1. Algoritma Pembagian Tim
+```dart
+// Mencoba membuat pasangan dengan prioritas tertinggi
+Future<PairSession?> _tryCreateWithPriorityOne() async {
+  for (int attempt = 0; attempt < MAX_VALIDATION_ATTEMPTS; attempt++) {
+    // Reset state untuk percobaan baru
+    teams.clear();
+    noTeam = null;
+    noMoreUniquePairs = false;
+    
+    // Acak pemain yang tersedia
+    availablePlayers.shuffle();
+    List<Player> remainingPlayers = List.from(availablePlayers);
+
+    while (remainingPlayers.length >= 2) {
+      Player player1 = remainingPlayers[0];
+      
+      // Cari pasangan yang valid (tidak di dontMatch & belum pernah dipasangkan)
+      Player? player2 = _findValidPartner(player1, remainingPlayers);
+      
+      if (player2 != null) {
+        teams.add(Team(player1, player2));
+        remainingPlayers.remove(player1);
+        remainingPlayers.remove(player2);
+      } else {
+        break; // Tidak ada pasangan valid
+      }
+    }
+
+    // Berhasil jika semua pemain terpasangkan atau tersisa 1
+    if (remainingPlayers.isEmpty || remainingPlayers.length == 1) {
+      if (remainingPlayers.length == 1) {
+        noTeam = remainingPlayers[0];
+      }
+      return _createPairSession();
+    }
+  }
+  return null; // Gagal setelah MAX_VALIDATION_ATTEMPTS
+}
+```
+
+### 2. Validasi Pasangan Unik
+```dart
+bool _isUniquePair(Player player1, Player player2) {
+  // Cek di history pairs
+  String pair1 = '${player1.docRef.id}-${player2.docRef.id}';
+  String pair2 = '${player2.docRef.id}-${player1.docRef.id}';
+  
+  return !historyPairs.contains(pair1) && 
+         !historyPairs.contains(pair2);
+}
+```
 
 ### 3. Pengelolaan Sesi
 ```dart
@@ -296,6 +240,7 @@ class PairSession {
   final bool noMoreUniquePairs;
   final DateTime createdAt;
   
+  // Simpan sesi ke Firestore
   Future<void> save() async {
     final doc = await sessionsRef.add({
       'createdAt': createdAt,
@@ -303,6 +248,7 @@ class PairSession {
       'noTeam': noTeam?.toJson(),
     });
     
+    // Simpan tim sebagai sub-collection
     for (var team in teams) {
       await doc.collection('pairs').add({
         'player1': team.player1.toJson(),
@@ -407,7 +353,6 @@ class PlayerCard extends StatelessWidget {
     );
   }
 }
-```
 
 ## Teknologi
 
@@ -416,23 +361,84 @@ class PlayerCard extends StatelessWidget {
 - BLoC Pattern (State Management)
 - Cloud Firestore
 
+## Mulai Menggunakan
+
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/taufan2/nepak_bulu.git
+   cd nepak_bulu
+   ```
+
+2. **Setup Firebase**
+   
+   **A. Persiapan Firebase CLI**
+   - Install Firebase CLI:
+     ```bash
+     npm install -g firebase-tools
+     ```
+   - Login ke Firebase:
+     ```bash
+     firebase login
+     ```
+   - Install FlutterFire CLI:
+     ```bash
+     dart pub global activate flutterfire_cli
+     ```
+   - Buat project di Firebase Console
+
+   **B. Setup Firestore**
+   - Konfigurasi Flutter dengan Firebase:
+     ```bash
+     flutterfire configure
+     ```
+   - Pilih platform yang dibutuhkan (Android & Web)
+   - Aktifkan Firestore di Firebase Console
+   - Update kode di `main.dart` dengan menambahkan inisialisasi Firebase
+
+   **C. Setup Firebase Hosting**
+   - Di root project, jalankan:
+     ```bash
+     firebase init hosting
+     ```
+   - Ikuti langkah berikut:
+     1. Pilih project yang sudah dibuat
+     2. Set public directory ke `build/web`
+     3. Konfigurasikan sebagai single-page app
+     4. TIDAK overwrite file yang sudah ada
+   - Build aplikasi web:
+     ```bash
+     flutter build web
+     ```
+   - Deploy ke Firebase Hosting:
+     ```bash
+     firebase deploy --only hosting
+     ```
+
+3. **Instalasi Dependensi**
+   ```bash
+   flutter pub get
+   ```
+
+4. **Jalankan Aplikasi**
+   ```bash
+   flutter run
+   ```
+
 ## Struktur Proyek
 
-Berikut adalah struktur folder utama dari proyek:
-
-```text
+```
 lib/
-├── bloc/                  # State management
+├── bloc/                 # State management
 ├── components/           # Widget reusable
 │   ├── matchmaking/     # Komponen matchmaking
 │   └── memberList/      # Komponen daftar pemain
 ├── helpers/             # Fungsi utilitas
 │   └── matchmakePlayers/# Algoritma matchmaking
 ├── models/              # Model data
-├── pages/               # Halaman UI
-│   ├── matchmaking_v2/  # Fitur matchmaking
-│   └── members/         # Manajemen pemain
-└── main.dart            # Entry point
+├── pages/              # Halaman UI
+│   ├── matchmaking_v2/ # Fitur matchmaking
+│   └── members/        # Manajemen pemain
+└── main.dart           # Entry point
 ```
 
 ## Dependensi Utama

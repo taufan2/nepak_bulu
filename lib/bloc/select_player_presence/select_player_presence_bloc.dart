@@ -31,6 +31,12 @@ class SelectPlayerPresenceBloc
         pairSession: event.pairSession,
       );
       emit(SelectPlayerPresenceMatchCreated(pair, pair.pairSession));
+      emit(
+        PlayerListFetched(
+          currentState.players,
+          presenceToggleLoading: false,
+        ),
+      );
     });
   }
 

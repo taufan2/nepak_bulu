@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../components/home/home_button.dart';
 import '../components/home/download_section.dart';
