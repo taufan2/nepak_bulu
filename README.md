@@ -353,6 +353,7 @@ class PlayerCard extends StatelessWidget {
     );
   }
 }
+```
 
 ## Teknologi
 
