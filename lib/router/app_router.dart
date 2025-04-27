@@ -77,12 +77,6 @@ final GoRouter router = GoRouter(
             return PreviewPairPage(pair: pair);
           },
         ),
-        GoRoute(
-          path: "diagram",
-          builder: (context, state) {
-            return DiagramPage();
-          },
-        ),
       ],
     ),
   ],
